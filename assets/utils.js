@@ -1,3 +1,5 @@
+"use strict";
+
 //draw glyph only if diiferent 
 Game.drawIfNeeded = function(display, x,y,chr,fg,bg) { 
     if(typeof display._data[x +"," +y] == 'undefined' ){

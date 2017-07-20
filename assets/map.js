@@ -1,3 +1,5 @@
+"use strict";
+
 Game.Map = function(width, height) {
     this.width = width;
     this.height = height;
@@ -127,14 +129,14 @@ Game.Map.prototype.drawMini = function() {
             //if cell is visible, draw tinted on mini map
             if (x >= this.topLeftX && x <= this.topLeftX + Game.mainScreenWidth && y >= this.topLeftY && y <= this.topLeftY + Game.mainScreenHeight) {
                 if (glyph.char === ".") {
-                    Game.drawIfNeeded(Game.mapDisplay, x, y, " ", 'black', 'beige')
+                    Game.drawIfNeeded(Game.mapDisplay, x, y, " ", 'black', 'white')
                 } else {
                     Game.drawIfNeeded(Game.mapDisplay, x, y, " ", 'black', 'black')
                 }
             } else //if cell not visible, draw blac&white on minimap
             {
                 if (glyph.char === ".") {
-                    Game.drawIfNeeded(Game.mapDisplay, x, y, " ", 'black', 'white')
+                    Game.drawIfNeeded(Game.mapDisplay, x, y, " ", 'black', 'grey')
                 } else {
                     Game.drawIfNeeded(Game.mapDisplay, x, y, " ", 'black', 'black')
                 }

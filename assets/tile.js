@@ -1,3 +1,5 @@
+"use strict";
+
 Game.Tile = function(glyph,digable,walkable) {
     this.glyph = glyph || new Game.Glyph();
     this.digable = digable || false;

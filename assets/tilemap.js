@@ -1,3 +1,5 @@
+"use strict";
+
 Game.tilemap = {
     "@": [Game.mainFontSize * 0, Game.mainFontSize * 7],
     ".": [Game.mainFontSize * 6, Game.mainFontSize * 6],
@@ -9,6 +11,7 @@ Game.tilemap = {
     "c": [Game.mainFontSize * 2, Game.mainFontSize * 6],
     "w": [Game.mainFontSize * 1, Game.mainFontSize * 6],
     "p": [Game.mainFontSize * 0, Game.mainFontSize * 6],
+    "X": [Game.mainFontSize * 2, Game.mainFontSize * 7],
     " ": [Game.mainFontSize * 1, Game.mainFontSize * 7],
     "t0": [Game.mainFontSize * 0, Game.mainFontSize * 0],
     "t1": [Game.mainFontSize * 1, Game.mainFontSize * 0],

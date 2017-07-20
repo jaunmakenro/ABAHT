@@ -1,3 +1,5 @@
+"use strict";
+
 Game.propsMap = function(width, height) {
     this.width = width;
     this.height = height;
@@ -47,12 +49,10 @@ Game.propsMap.prototype.getPropAt = function(x, y) {
 Game.propsMap.prototype.getPropCharAt = function(x, y) {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
         return ".";
-        //return nullProp;
     } else {
         var prop = this.props[x][y]
         if (prop == null || prop == "") {
             return "."
-                //return nullProp;
         } else {
             return prop.glyph.char
         }
@@ -67,7 +67,8 @@ Game.propsMap.prototype.draw = function(centerX, centerY) {
         for (var y = Game.map.topLeftY; y < Game.map.topLeftY + Game.mainScreenHeight; y++) {
             var prop = this.getPropAt(x, y)
             if (prop != null) {
-                if (prop.glyph.char != " ") {
+                var char = prop.glyph.char
+                if (char != " ") {
                     var terrainChar = Game.map.getTile(x, y).glyph.char
                     Game.display.draw(x - Game.map.topLeftX, y - Game.map.topLeftY, [terrainChar, prop.glyph.char], prop.glyph.fg, prop.glyph.bg);
                 }
@@ -167,8 +168,21 @@ Game.propsMap.prototype.patternCheckAround = function(lastMovedPropX, lastMovedP
                                     this.removePropAt(findedPropsCoord[i].x, findedPropsCoord[i].y)
                                 }
                                 //replace lastmovedprops by result
-                                console.log("create " + Game.recipes[key].result.glyph.char)
-                                this.create(lastMovedPropX, lastMovedPropY, Game.recipes[key].result)
+                                if (Game.recipes[key].kind == "ressource"){
+                                    //create resulting resource at last moved porp position
+                                    console.log("create " + Game.recipes[key].result.glyph.char)
+                                    this.create(lastMovedPropX, lastMovedPropY, Game.recipes[key].result)
+                                } else if (Game.recipes[key].kind == "building") {
+                                    //create resulting object table at pattren position
+                                    console.log("create " + Game.recipes[key].result)
+                                    for (var resultY = 0; resultY < Game.recipes[key].result.length; resultY++) {
+                                        for (var resultX = 0; resultX < Game.recipes[key].result[0].length; resultX++) {
+                                            if (Game.recipes[key].result[resultY][resultX] != "."){
+                                                this.create(x+resultX, y+resultY, Game.recipes[key].result[resultY][resultX])
+                                            }                                        
+                                        }
+                                    }
+                                }
                                 break
                             }
                         }
