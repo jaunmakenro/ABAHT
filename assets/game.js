@@ -6,40 +6,42 @@ var Game = {
     menuDisplay: null,
     mainScreenWidth: 10,
     mainScreenHeight: 10,
-    mainFontSize: 32,
+    mainFontSize: 64,
     asciiFontSize: 16,
-    mapWidth: 50,
+    mapWidth: 9,
     mapHeight: 100,
     mapScreenWidth: 0,
     mapScreenHeight: 0,
     displayMode: "tile",
-    cursormode: "default",
     activeScreen: "menu",
     menuIndex: 0,
+    moves:0,
+
+    test : false,
 
     //initialisation menu
     initMenu: function() {
         // create main dsplay
         Game.mainScreenWidth = Math.floor((window.innerWidth - 50) / Game.mainFontSize);
         Game.mainScreenHeight = Math.floor((window.innerHeight - 50) / Game.mainFontSize);
-
+        
         this.menuDisplay = new ROT.Display({ width: this.mainScreenWidth, height: this.mainScreenHeight, fontSize: this.mainFontSize, forceSquareRatio: true });
         this.menuDisplay.setOptions({
             fontStyle: "bold",
             bg: 'white',
             fg: 'black'
         });
+        //document.getElementById('up').innerHTML = "ho"
 
-        this.redrawMenu()
-        window.addEventListener("keydown", this.handleKeys);
         // Add the container to our HTML page
         document.getElementById('main').appendChild(Game.menuDisplay.getContainer());
-        document.getElementById('main').focus();
+        this.redrawMenu()
+        window.addEventListener("click", this.handleTouch);
+        window.addEventListener("keydown", this.handleKeys);
     },
 
     redrawMenu: function() {
-        console.log("redraw menu")
-        var menus = ["Main", "Main ASCI", "test map"]
+        var menus = ["Main", "Main ASCII", "test map", "000"]
         for (var i = 0; i < menus.length; i++) {
             var text = menus[i]
             if (i == Game.menuIndex) { text = "%c{red}" + text }
@@ -53,11 +55,7 @@ var Game = {
         // create main dsplay
         this.display = new ROT.Display({ width: this.mainScreenWidth, height: this.mainScreenHeight, fontSize: this.mainFontSize, forceSquareRatio: true });
         this.updateMainDisplayOptions();
-        //create mini map display
-        var miniMapFontSize = 160 / this.mapWidth
-        this.mapScreenWidth = this.mapWidth,
-            this.mapScreenHeight = this.mapHeight,
-            this.mapDisplay = new ROT.Display({ width: this.mapScreenWidth, height: this.mapScreenHeight, fontSize: 3, forceSquareRatio: true });
+        document.getElementById('up').innerHTML = "Moves: " + Game.moves
         //create map and player
         this.map = new Game.Map(this.mapWidth, this.mapHeight);
         this.propsMap = new Game.propsMap(this.map.width, this.map.height)
@@ -66,7 +64,7 @@ var Game = {
 
         //level initialization
         this.player = new Game.Player(2, this.mapHeight / 2 + 1);
-        for (var x = 0; x < 10; x++) {
+        for (var x = 0; x < 9; x++) {
             for (var y = this.player.y - 3; y < this.player.y + 3; y++) {
                 Game.map.tiles[x][y] = Game.Tile.floorTile // dig map
             }
@@ -84,42 +82,37 @@ var Game = {
         this.engine = new ROT.Engine(this.scheduler);
         this.scheduler.add(this.player, true);
         this.engine.start();
-
-        window.addEventListener("keydown", this.handleKeys);
-        window.addEventListener('click', this.handleClick);
-        window.addEventListener('onmousedown', this.handleClic);
-        window.addEventListener('mousewheel', this.handleWheel);
-        document.getElementById("main").addEventListener('mousemove', this.overing);
-
+  
         // Add the container to our HTML page
         document.getElementById('main').appendChild(Game.display.getContainer());
-        document.getElementById('main').focus();
-        document.getElementById('map').appendChild(Game.mapDisplay.getContainer());
         Game.updateDisplay();
     },
 
     /////// Input managment methods
-    overing: function(event) {
-        //manage cursor look, while overing main display 
-        var target = Game.display.eventToPosition(event)
-        target[0] += Game.map.topLeftX
-        target[1] += Game.map.topLeftY
+    //gestion touch    
+    handleTouch: function(event) {
+        switch (Game.activeScreen) {
+            case "menu":
+                this.menuDisplay = null
+                Game.mainFontSize = 64
+                Game.activeScreen = "main"
+                Game.init()
+                break;
 
-        if (Game.map.getTile(target[0], target[1]).walkable) {
-            document.getElementById("main").style.cursor = "url(assets/walkCursor.png), pointer"; //
-        } else if (Game.map.getTile(target[0], target[1]).digable) {
-            document.getElementById("main").style.cursor = "url(assets/digCursor.png), pointer";
-        } else {
-            document.getElementById("main").style.cursor = "pointer";
+            case "main":
+                Game.player.processEventTouch(event)
+                break;
+
+            default:
+                break;
         }
     },
 
     //gestion clavier 
     handleKeys: function(event) {
-        console.log(Game.menuIndex)
+        this.test = true
         switch (Game.activeScreen) {
             case "menu":
-                console.log(event)
                 if (event.key == "ArrowDown") {
                     Game.menuIndex += 1
                 }
@@ -131,7 +124,7 @@ var Game = {
                         case 0: //main
                             document.getElementById('main').innerHTML = '';
                             this.menuDisplay = null
-                            Game.mainFontSize = 32
+                            Game.mainFontSize = 64
                             Game.activeScreen = "main"
                             Game.init()
                             break;
@@ -155,122 +148,82 @@ var Game = {
                 break;
 
             case "main":
-                Game.player.moveToDir(event)
-                    //console.log(event)
-                    //other key
-                if (event.key === "<") { Game.zoom(2) }
-                if (event.key === ">") { Game.zoom(0.5) }
+                if (event.key == ",") {
+                    Game.showHelp();
+                }else{
+                    Game.player.processEventKey(event)
+                }
                 break;
+            case "help":
+                Game.activeScreen = "main"
+                Game.updateDisplay();
+                break
 
             default:
                 break;
         }
     },
 
-    //handle click
-    handleClick: function(event) {
-        //position du clic sur le display principale
-        var target = Game.display.eventToPosition(event)
-            //si on est sur le display principal, on recupere la position sur la carte
-        if (target[0] != -1) {
-            target[0] += Game.map.topLeftX
-            target[1] += Game.map.topLeftY
-            if (Game.map.getTile(target[0], target[1]).walkable) {
-                Game.player.moveTo(target) //run pathfinding method
-            }
-            return
-        }
-        //position du clic sur le display de la map
-        var target = Game.mapDisplay.eventToPosition(event)
-            //si on est sur le display principal, on recupere la position sur la carte
-        if (target[0] != -1) {
-            Game.player.moveTo(target) //run pathfinding method
-            return
-        }
-    },
-
-    handleWheel: function(event) {
-        if (event.deltaY > 0) {
-            Game.zoom(2)
-        }
-        if (event.deltaY < 0) {
-            Game.zoom(0.5)
+    showHelp: function(){
+        if (Game.activeScreen = "main"){
+            console.log("show help")
+            Game.drawRecipes();
+            Game.activeScreen = "help"
+            document.getElementById('main').innerHTML = 'help screen';
+        }else if(Game.activeScreen = "help"){
+            Game.updateDisplay();
+            Game.activeScreen = "help"
+            document.getElementById('main').innerHTML = "Moves: " + Game.moves;
         }
     },
 
     //////// Display management methods
     updateDisplay: function() {
-        console.log("update diplay")
+        //console.log("update diplay")
             //draw map and player
         this.map.drawMap(Game.player.x, Game.player.y);
-        this.map.drawMini();
-        this.player.draw();
         this.propsMap.draw();
-        this.propsMap.drawOnMiniMap();
+        this.player.draw();
         Game.display.getContainer().style.display = 'none';
         Game.display.getContainer().style.display = 'block';
-    },
-
-    zoom: function(factor) {
-        console.log("zoom " + factor);
-        console.log("font size " + Game.mainFontSize);
-        Game.mainFontSize = Game.mainFontSize / factor;
-        if (Game.mainFontSize <= 64 && Game.mainFontSize >= 8) {
-            Game.mainScreenWidth = Game.mainScreenWidth * factor;
-            Game.mainScreenHeight = Game.mainScreenHeight * factor;
-            console.log("new font size : " + Game.mainFontSize);
-            Game.updateMainDisplayOptions();
-            Game.updateDisplay();
-        } else { //out of zoom bound, back to initial state
-            Game.mainFontSize = Game.mainFontSize * factor;
-        }
+        document.getElementById('up').innerHTML = "Moves: " + Game.moves
     },
 
     updateMainDisplayOptions: function() {
-        Game.mainScreenWidth = Math.floor((window.innerWidth * 0.75) / Game.mainFontSize);
-        Game.mainScreenHeight = Math.floor((window.innerHeight - 30) / Game.mainFontSize);
+        Game.mainScreenWidth = Math.floor((window.innerWidth - 10) / Game.mainFontSize);
+        Game.mainScreenHeight = Math.floor((window.innerHeight - 10) / Game.mainFontSize);
 
-        //ASCII mode
-        if (Game.mainFontSize <= Game.asciiFontSize) {
-            this.displayMode = "ascii"
-            Game.display.setOptions({
-                layout: "rect",
-                width: Game.mainScreenWidth,
-                height: Game.mainScreenHeight,
-                fontSize: Game.mainFontSize
-            });
-            return
-        } else {
-            //tileset mode
-            //define tilemap
-            this.displayMode = "tile"
-            var tilemap = Game.tilemap
-                //get tileset
-            var tileSet = document.createElement("img");
-            switch (Game.mainFontSize) {
-                case 16:
-                    tileSet.src = "assets/tilset16x16.png";
-                    break
-                case 32:
-                    tileSet.src = "assets/tilset32x32.png";
-                    break
-                case 64:
-                    tileSet.src = "assets/tileset64x64complex.png";
-                    break
-            }
-            //apply options
-            Game.display.setOptions({
-                layout: "tile",
-                bg: "transparent",
-                tileWidth: Game.mainFontSize,
-                tileHeight: Game.mainFontSize,
-                tileSet: tileSet,
-                tileMap: tilemap,
-                width: Game.mainScreenWidth,
-                height: Game.mainScreenHeight,
-                fontSize: Game.mainFontSize
-            })
+        //tileset mode
+        //define tilemap
+        this.displayMode = "tile"
+        var tilemap = Game.tilemap
+            //get tileset
+        var tileSet = document.createElement("img");
+        switch (Game.mainFontSize) {
+            case 16:
+                tileSet.src = "assets/tilset16x16.png";
+                break
+            case 32:
+                tileSet.src = "assets/tilset32x32.png";
+                break
+            case 64:
+                tileSet.src = "assets/tileset64x64.png";
+                break
         }
+
+        //apply options
+        Game.display.setOptions({
+            layout: "tile",
+            bg: "white",
+            fg: "white",
+            tileWidth: Game.mainFontSize,
+            tileHeight: Game.mainFontSize,
+            tileSet: tileSet,
+            tileMap: tilemap,
+            width: Game.mainScreenWidth,
+            height: Game.mainScreenHeight,
+            fontSize: Game.mainFontSize
+        })
         Game.display.getContainer().style.display = 'none';
         Game.display.getContainer().style.display = 'block';
     },

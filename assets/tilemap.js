@@ -2,6 +2,7 @@
 
 Game.tilemap = {
     "@": [Game.mainFontSize * 0, Game.mainFontSize * 7],
+    "=": [Game.mainFontSize * 0, Game.mainFontSize * 8],
     ".": [Game.mainFontSize * 6, Game.mainFontSize * 6],
     "#": [Game.mainFontSize * 5, Game.mainFontSize * 6],
     "r": [Game.mainFontSize * 4, Game.mainFontSize * 6],
@@ -13,6 +14,7 @@ Game.tilemap = {
     "p": [Game.mainFontSize * 0, Game.mainFontSize * 6],
     "X": [Game.mainFontSize * 2, Game.mainFontSize * 7],
     " ": [Game.mainFontSize * 1, Game.mainFontSize * 7],
+    "": [Game.mainFontSize * 1, Game.mainFontSize * 7],
     "t0": [Game.mainFontSize * 0, Game.mainFontSize * 0],
     "t1": [Game.mainFontSize * 1, Game.mainFontSize * 0],
     "t2": [Game.mainFontSize * 2, Game.mainFontSize * 0],

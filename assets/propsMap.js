@@ -48,18 +48,17 @@ Game.propsMap.prototype.getPropAt = function(x, y) {
 // Gets the prop char for a given coordinate set, return "." si pas de prop
 Game.propsMap.prototype.getPropCharAt = function(x, y) {
     if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
-        return ".";
+        return "";
     } else {
         var prop = this.props[x][y]
         if (prop == null || prop == "") {
-            return "."
+            return ""
         } else {
             return prop.glyph.char
         }
     }
 };
-
-
+84
 //draw all visible props
 Game.propsMap.prototype.draw = function(centerX, centerY) {
     //use map visibility boundary
@@ -91,17 +90,28 @@ Game.propsMap.prototype.drawOnMiniMap = function(centerX, centerY) {
 };
 
 Game.propsMap.prototype.pushToDir = function(x, y, dx, dy) {
+    //if destination is walkable
     if (Game.map.getTile(x + dx, y + dy).walkable) {
         var propToMove = this.getPropAt(x, y)
         var propAtDest = this.getPropAt(x + dx, y + dy)
-            //move the prop
+        //move the prop
         if (propAtDest == null && propToMove.pushable) {
             this.props[x][y] = null
             this.props[x + dx][y + dy] = propToMove
             this.patternCheckAround(x + dx, y + dy);
+            Game.moves += 1
         } else if (propToMove.destroyable) { //destroy the prop
             this.props[x][y] = propToMove.destroyProduct
             this.patternCheckAround(x, y);
+            Game.moves += 1
+        }
+    }
+    else{//sinon, try to destroy the object
+        var propToMove = this.getPropAt(x, y)
+        if (propToMove.destroyable) { //destroy the prop
+            this.props[x][y] = propToMove.destroyProduct
+            this.patternCheckAround(x, y);
+            Game.moves += 1
         }
     }
 };
@@ -139,7 +149,7 @@ Game.propsMap.prototype.patternCheckAround = function(lastMovedPropX, lastMovedP
             //pour chaque case de la ligne
             for (var x = lastMovedPropX - 2; x < lastMovedPropX + 2; x++) {
                 var findedChar = this.getPropCharAt(x, y)
-                if (findedChar == patternToFind[0][0] || patternToFind[0][0] == ".") //first cell of the pattern has been found
+                if (findedChar == patternToFind[0][0] || patternToFind[0][0] == "") //first cell of the pattern has been found
                 {
                     //list of finded props initialization 
                     findedPropsCoord = [];
@@ -151,9 +161,9 @@ Game.propsMap.prototype.patternCheckAround = function(lastMovedPropX, lastMovedP
                     patternIndX = 1;
                     patternIndY = 0;
                     var findedChar = this.getPropCharAt(x + patternIndX, y + patternIndY)
-                    while (findedChar == patternToFind[patternIndY][patternIndX] || patternToFind[patternIndY][patternIndX] == ".") {
+                    while (findedChar == patternToFind[patternIndY][patternIndX] || patternToFind[patternIndY][patternIndX] == "") {
                         //on compléte la liste des prop trouvées
-                        if (patternToFind[patternIndY][patternIndX] != ".") {
+                        if (patternToFind[patternIndY][patternIndX] != "") {
                             findedPropsCoord.push({ x: x + patternIndX, y: y + patternIndY })
                         }
                         patternIndX += 1 //case suivante
@@ -168,7 +178,7 @@ Game.propsMap.prototype.patternCheckAround = function(lastMovedPropX, lastMovedP
                                     this.removePropAt(findedPropsCoord[i].x, findedPropsCoord[i].y)
                                 }
                                 //replace lastmovedprops by result
-                                if (Game.recipes[key].kind == "ressource"){
+                                if (Game.recipes[key].kind == "ressource") {
                                     //create resulting resource at last moved porp position
                                     console.log("create " + Game.recipes[key].result.glyph.char)
                                     this.create(lastMovedPropX, lastMovedPropY, Game.recipes[key].result)
@@ -177,9 +187,9 @@ Game.propsMap.prototype.patternCheckAround = function(lastMovedPropX, lastMovedP
                                     console.log("create " + Game.recipes[key].result)
                                     for (var resultY = 0; resultY < Game.recipes[key].result.length; resultY++) {
                                         for (var resultX = 0; resultX < Game.recipes[key].result[0].length; resultX++) {
-                                            if (Game.recipes[key].result[resultY][resultX] != "."){
-                                                this.create(x+resultX, y+resultY, Game.recipes[key].result[resultY][resultX])
-                                            }                                        
+                                            if (Game.recipes[key].result[resultY][resultX] != ".") {
+                                                this.create(x + resultX, y + resultY, Game.recipes[key].result[resultY][resultX])
+                                            }
                                         }
                                     }
                                 }

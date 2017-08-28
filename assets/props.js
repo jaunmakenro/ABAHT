@@ -16,4 +16,4 @@ Game.Prop.wood = new Game.Prop(new Game.Glyph('w', 'brown', 'white'), true, fals
 Game.Prop.plank = new Game.Prop(new Game.Glyph('p', 'black', 'white'), true, false, null);
 Game.Prop.tree = new Game.Prop(new Game.Glyph('t', 'green', 'white'), false, true, Game.Prop.wood);
 Game.Prop.cactus = new Game.Prop(new Game.Glyph('c', 'green', 'white'), false, true, null);
-Game.Prop.track = new Game.Prop(new Game.Glyph('X', 'red', 'white'), false, false, null);
+Game.Prop.track = new Game.Prop(new Game.Glyph('X', 'red', 'white'), false, false, null, true);
